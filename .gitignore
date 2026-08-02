@@ -1,0 +1,23 @@
+*.iml
+.gradle/
+.kotlin/
+.idea/
+.DS_Store
+.externalNativeBuild
+.cxx
+/captures
+/exported-db/
+
+# Build outputs (any module) — do NOT commit; manifests embed MAPS_API_KEY
+**/build/
+*.apk
+*.aab
+*.dex
+
+# Local secrets & signing (never commit)
+/local.properties
+/secrets.properties
+/keystore.properties
+/keystore/
+*.jks
+*.keystore

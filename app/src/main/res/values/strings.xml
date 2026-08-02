@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Redline</string>
+
+    <!-- Recording notification -->
+    <string name="notif_channel_recording_name">Trip recording</string>
+    <string name="notif_channel_recording_desc">Shows the live trip while GPS tracking is active</string>
+    <string name="notif_recording_title">Recording trip</string>
+
+    <!-- Permissions -->
+    <string name="perm_rationale_title">Location needed</string>
+    <string name="perm_rationale_body">Redline needs precise location to record your rides. Grant location access to start a trip.</string>
+    <string name="perm_background_warning">Background location is off. Tracking may stop when the screen is locked or the app is in the background. Allow \"Always\" in settings for uninterrupted recording.</string>
+</resources>

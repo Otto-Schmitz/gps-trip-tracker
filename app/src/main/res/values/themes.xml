@@ -1,0 +1,9 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base theme applied before Compose takes over. Dark by default (gearhead look). -->
+    <style name="Theme.Redline" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">@color/redline_background</item>
+        <item name="android:navigationBarColor">@color/redline_background</item>
+        <item name="android:windowBackground">@color/redline_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>
