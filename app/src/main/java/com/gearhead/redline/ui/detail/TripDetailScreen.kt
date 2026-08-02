@@ -1,14 +1,20 @@
 package com.gearhead.redline.ui.detail
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -16,6 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -35,6 +42,7 @@ import com.gearhead.redline.data.local.entity.LocationPointEntity
 import com.gearhead.redline.data.local.entity.TripWithPoints
 import com.gearhead.redline.ui.components.MetricRow
 import com.gearhead.redline.ui.components.MetricTile
+import com.gearhead.redline.ui.components.SectionLabel
 import com.gearhead.redline.ui.theme.Amber
 import com.gearhead.redline.ui.theme.Ink
 import com.gearhead.redline.ui.theme.Panel
@@ -94,6 +102,7 @@ fun TripDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 RouteMap(data)
+                if (data.points.isNotEmpty()) SpeedLegend()
                 Stats(data)
             }
         }
@@ -103,7 +112,10 @@ fun TripDetailScreen(
 @Composable
 private fun RouteMap(data: TripWithPoints) {
     val context = LocalContext.current
-    val points = data.points.map { LatLng(it.latitude, it.longitude) }
+    // @Relation gives no ordering guarantee; sort by time so the route line and
+    // its speed coloring follow the actual path the rider took.
+    val orderedPoints = data.points.sortedBy { it.timestamp }
+    val points = orderedPoints.map { LatLng(it.latitude, it.longitude) }
 
     Box(
         modifier = Modifier
@@ -142,13 +154,14 @@ private fun RouteMap(data: TripWithPoints) {
             ),
             uiSettings = MapUiSettings(zoomControlsEnabled = false, compassEnabled = false),
         ) {
-            Polyline(points = points, color = Amber, width = 12f)
+            // Route colored by speed band (cool = slow, red = fast).
+            Polyline(points = points, spans = SpeedGradient.speedSpans(orderedPoints), width = 14f)
 
             Marker(state = rememberMarkerState(key = "start", position = points.first()), title = "Start")
             Marker(state = rememberMarkerState(key = "end", position = points.last()), title = "End")
 
             // Highlight the fastest point of the ride.
-            maxSpeedPoint(data.points)?.let { fastest ->
+            maxSpeedPoint(orderedPoints)?.let { fastest ->
                 Marker(
                     state = rememberMarkerState(
                         key = "top",
@@ -157,6 +170,31 @@ private fun RouteMap(data: TripWithPoints) {
                     title = "Top speed",
                     snippet = "${Formatters.speedKmh(fastest.speedMps)} km/h",
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SpeedLegend() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        SectionLabel("km/h")
+        SpeedGradient.bands.forEach { band ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier
+                        .size(12.dp)
+                        .clip(CircleShape)
+                        .background(band.color)
+                )
+                Spacer(Modifier.width(6.dp))
+                Text(text = band.label, color = TextSecondary, style = MaterialTheme.typography.bodyMedium)
             }
         }
     }
